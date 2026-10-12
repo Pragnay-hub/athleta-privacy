@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Athleta — Email confirmed</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px; background: #0A0A0A; color: #FFFFFF;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .card {
+    width: 100%; max-width: 420px; text-align: center; background: #141414;
+    border: 1px solid #262626; border-radius: 24px; padding: 40px 24px 32px;
+  }
+  .brand { font-size: 15px; font-weight: 800; letter-spacing: 4px; color: #FFFFFF; margin-bottom: 28px; }
+  .brand span { color: #39FF14; }
+  .icon {
+    width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 20px; display: flex;
+    align-items: center; justify-content: center; font-size: 36px; font-weight: 800;
+  }
+  .ok .icon { background: rgba(57,255,20,.12); color: #39FF14; border: 2px solid #39FF14; }
+  .bad .icon { background: rgba(255,179,0,.12); color: #FFB300; border: 2px solid #FFB300; }
+  h1 { font-size: 24px; margin: 0 0 10px; }
+  p { color: #A0A0A0; font-size: 15px; line-height: 1.55; margin: 0 0 24px; }
+  .btn {
+    display: block; width: 100%; padding: 16px; border-radius: 14px; background: #39FF14;
+    color: #0A0A0A; font-size: 16px; font-weight: 800; text-decoration: none;
+  }
+  .small { font-size: 13px; color: #6B6B6B; margin: 18px 0 0; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<main class="card ok" id="ok">
+  <div class="brand">ATHL<span>E</span>TA</div>
+  <div class="icon">✓</div>
+  <h1>You're verified!</h1>
+  <p>Thanks for confirming your email. Your account is ready — head back to the Athleta app to sign in and find a game.</p>
+  <a class="btn" id="open-ok" href="athleta://">Open Athleta</a>
+  <p class="small">You can close this page.</p>
+</main>
+
+<main class="card bad hidden" id="bad">
+  <div class="brand">ATHL<span>E</span>TA</div>
+  <div class="icon">!</div>
+  <h1>This link has expired</h1>
+  <p id="bad-text">No problem — open Athleta, sign in with your email and password, and we'll send you a fresh code to enter in the app.</p>
+  <a class="btn" id="open-bad" href="athleta://">Open Athleta</a>
+</main>
+
+<script>
+  // Supabase lands here after the confirmation link, with either a session
+  // (#access_token=…) or an error (#error=…&error_code=otp_expired) in the URL.
+  // Read only the error, then wipe the whole fragment so no token sits in the
+  // address bar or browser history.
+  (function () {
+    var raw = (location.hash || '').replace(/^#/, '') + '&' + (location.search || '').replace(/^\?/, '');
+    var params = new URLSearchParams(raw);
+    var errorCode = params.get('error_code') || params.get('error');
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+
+    if (errorCode) {
+      document.getElementById('ok').classList.add('hidden');
+      document.getElementById('bad').classList.remove('hidden');
+      if (errorCode !== 'otp_expired') {
+        document.querySelector('#bad h1').textContent = "This link didn't work";
+      }
+    }
+
+    // On Android, an intent link opens the installed app reliably from Chrome.
+    if (/Android/i.test(navigator.userAgent)) {
+      var intent = 'intent://#Intent;scheme=athleta;package=com.athleta.app;end';
+      document.getElementById('open-ok').href = intent;
+      document.getElementById('open-bad').href = intent;
+    }
+  })();
+</script>
+</body>
+</html>
