@@ -63,6 +63,13 @@
     var raw = (location.hash || '').replace(/^#/, '') + '&' + (location.search || '').replace(/^\?/, '');
     var params = new URLSearchParams(raw);
     var errorCode = params.get('error_code') || params.get('error');
+
+    // A password-reset link (Site URL fallback, or the v7 app, which sends no
+    // redirect): hand the recovery session to the set-new-password page.
+    if (params.get('type') === 'recovery') {
+      location.replace('reset-password.html' + location.hash);
+      return;
+    }
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
 
     if (errorCode) {
